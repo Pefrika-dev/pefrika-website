@@ -393,6 +393,9 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">M-Pesa</h3>
                     <p class="text-slate-600 text-sm leading-relaxed">Fast mobile money payments for deposits, milestone payments, and project completion balances.</p>
+                    <button type="button" class="pay-now-btn mt-5 w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors" data-payment-method="M-Pesa">
+                        Pay via M-Pesa
+                    </button>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center hover:shadow-md transition-all duration-200">
@@ -401,6 +404,9 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Visa / MasterCard</h3>
                     <p class="text-slate-600 text-sm leading-relaxed">Secure card payments accepted for local and international clients with straightforward invoicing.</p>
+                    <button type="button" class="pay-now-btn mt-5 w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors" data-payment-method="Card">
+                        Pay by Card
+                    </button>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center hover:shadow-md transition-all duration-200">
@@ -409,6 +415,9 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Bank Transfer</h3>
                     <p class="text-slate-600 text-sm leading-relaxed">Direct bank transfer options for business clients and larger custom software contracts.</p>
+                    <button type="button" class="pay-now-btn mt-5 w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors" data-payment-method="Bank Transfer">
+                        Pay by Bank
+                    </button>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center hover:shadow-md transition-all duration-200">
@@ -417,11 +426,14 @@
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">PayPal</h3>
                     <p class="text-slate-600 text-sm leading-relaxed">A convenient option for clients who prefer cross-border digital payment methods and online transfers.</p>
+                    <button type="button" class="pay-now-btn mt-5 w-full bg-amber-500 hover:bg-amber-400 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors" data-payment-method="PayPal">
+                        Pay with PayPal
+                    </button>
                 </div>
             </div>
 
             <div class="mt-12 text-center">
-                <button onclick="openModal()" class="bg-slate-900 hover:bg-sky-600 text-white px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all duration-200">
+                <button onclick="openPaymentModal('Custom')" class="bg-slate-900 hover:bg-sky-600 text-white px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all duration-200">
                     Request a Payment Plan
                 </button>
             </div>
@@ -1030,6 +1042,73 @@
         </div>
     </footer>
 
+    <!-- Payment Request Modal -->
+    <div id="payment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in duration-200">
+            <button onclick="closePaymentModal()" aria-label="Close payment modal" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700 text-xl font-bold">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="mb-6">
+                <span class="text-xs font-bold uppercase tracking-widest text-sky-600">Payment Request</span>
+                <h3 class="text-2xl font-extrabold text-slate-900 mt-1">Complete Your Payment Request</h3>
+                <p class="text-slate-600 text-sm mt-1">
+                    Submit your payment details and we will confirm the next step for your project or service invoice.
+                </p>
+            </div>
+
+            <form id="payment-form" onsubmit="handlePaymentFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name</label>
+                    <input id="payment-name" type="text" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. Jane Wanjiku">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Email or Phone</label>
+                    <input id="payment-contact" type="text" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. jane@example.com or 0712345678">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Payment Method</label>
+                        <select id="payment-method" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900">
+                            <option>M-Pesa</option>
+                            <option>Card</option>
+                            <option>Bank Transfer</option>
+                            <option>PayPal</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Amount (KES)</label>
+                        <input id="payment-amount" type="number" min="1" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="5000">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Project / Service</label>
+                    <input id="payment-service" type="text" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. Website design package">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Notes</label>
+                    <textarea id="payment-notes" rows="3" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="Any additional details or invoice notes"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-sky-600 text-white py-3.5 rounded-xl font-semibold text-sm shadow transition-colors mt-2">
+                    Submit Payment Request
+                </button>
+            </form>
+
+            <div id="payment-success" class="hidden text-center py-8 space-y-3">
+                <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-900">Payment request sent</h4>
+                <p class="text-slate-600 text-sm">
+                    Your request has been prepared and is ready to be sent to the team for confirmation and payment instructions.
+                </p>
+                <button onclick="closePaymentModal()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold mt-4">
+                    Close Window
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Appointment Booking Modal (Frontend Interaction) -->
     <div id="appointment-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm hidden">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in duration-200">
@@ -1110,6 +1189,10 @@
         const modal = document.getElementById('appointment-modal');
         const appointmentForm = document.getElementById('appointment-form');
         const formSuccess = document.getElementById('form-success');
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentForm = document.getElementById('payment-form');
+        const paymentSuccess = document.getElementById('payment-success');
+        const paymentMethod = document.getElementById('payment-method');
 
         function openModal() {
             modal.classList.remove('hidden');
@@ -1123,10 +1206,29 @@
             document.body.style.overflow = 'auto';
         }
 
+        function openPaymentModal(method = 'Custom') {
+            paymentModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            paymentForm.classList.remove('hidden');
+            paymentSuccess.classList.add('hidden');
+            paymentMethod.value = method;
+        }
+
+        function closePaymentModal() {
+            paymentModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
         // Close modal on outside click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 closeModal();
+            }
+        });
+
+        paymentModal.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                closePaymentModal();
             }
         });
 
@@ -1135,6 +1237,47 @@
             event.preventDefault();
             appointmentForm.classList.add('hidden');
             formSuccess.classList.remove('hidden');
+        }
+
+        document.querySelectorAll('.pay-now-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const method = button.dataset.paymentMethod || 'Custom';
+                openPaymentModal(method);
+            });
+        });
+
+        function handlePaymentFormSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('payment-name').value.trim();
+            const contact = document.getElementById('payment-contact').value.trim();
+            const method = document.getElementById('payment-method').value;
+            const amount = document.getElementById('payment-amount').value;
+            const service = document.getElementById('payment-service').value.trim();
+            const notes = document.getElementById('payment-notes').value.trim();
+
+            if (!name || !contact || !amount || !service) {
+                return;
+            }
+
+            const message = [
+                'Hello Pefrika Digital Solutions Limited,',
+                '',
+                'I would like to make a payment request.',
+                `Name: ${name}`,
+                `Contact: ${contact}`,
+                `Payment Method: ${method}`,
+                `Amount: KES ${Number(amount).toLocaleString()}`,
+                `Service: ${service}`,
+                notes ? `Notes: ${notes}` : '',
+                '',
+                'Please confirm the payment instructions.'
+            ].filter(Boolean).join('\n');
+
+            const whatsappUrl = `https://wa.me/254705023432?text=${encodeURIComponent(message)}`;
+            paymentForm.classList.add('hidden');
+            paymentSuccess.classList.remove('hidden');
+            window.open(whatsappUrl, '_blank');
         }
     </script>
 </body>
