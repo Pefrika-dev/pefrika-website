@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Pefrika Digital Solutions Limited</title>
+    <meta name="description" content="Practical insights on websites, software, and digital growth for Kenyan businesses from Pefrika Digital Solutions Limited.">
+    <meta property="og:title" content="Pefrika Insights | Digital Solutions in Kenya">
+    <meta property="og:description" content="Practical ideas to help businesses make better use of websites and software.">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafbfc;
+            color: #0f172a;
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-sky-500 selection:text-white">
+    <header class="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="index.html" class="flex items-center space-x-3 group">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:bg-sky-600 transition-colors">P</div>
+                <div>
+                    <span class="block font-bold text-lg leading-tight tracking-tight text-slate-900">PEFRIKA</span>
+                    <span class="block text-[10px] font-semibold tracking-wider text-sky-600 uppercase">Digital Solutions Limited</span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-600">
+                <a href="index.html" class="hover:text-sky-600 transition-colors">Home</a>
+                <a href="index.html#services" class="hover:text-sky-600 transition-colors">Services</a>
+                <a href="index.html#payments" class="hover:text-sky-600 transition-colors">Payments</a>
+                <a href="#articles" aria-current="page" class="text-sky-600 font-semibold">Blog</a>
+                <a href="index.html#contact" class="hover:text-sky-600 transition-colors">Contact</a>
+            </nav>
+
+            <button id="menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu" class="md:hidden p-2 text-slate-700 hover:text-sky-600 focus:outline-none">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <nav id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-1 shadow-lg">
+            <a href="index.html" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-sky-600 border-b border-slate-100">Home</a>
+            <a href="index.html#services" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-sky-600 border-b border-slate-100">Services</a>
+            <a href="index.html#payments" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-sky-600 border-b border-slate-100">Payments</a>
+            <a href="#articles" class="mobile-link block py-2 text-base font-semibold text-sky-600 border-b border-slate-100" aria-current="page">Blog</a>
+            <a href="index.html#contact" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-sky-600">Contact</a>
+        </nav>
+    </header>
+
+    <main class="pt-20">
+        <section class="bg-slate-900 text-white py-20 sm:py-28">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl">
+                    <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sky-300">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        Ideas for growing businesses
+                    </span>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mt-5">Pefrika Insights</h1>
+                    <p class="text-lg sm:text-xl text-slate-300 leading-relaxed mt-6">
+                        Practical advice on websites, software, and digital tools to help your organization work smarter and grow with confidence.
+                    </p>
+                    <a href="#articles" class="inline-flex items-center gap-2 mt-8 bg-sky-600 hover:bg-sky-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                        Explore the articles
+                        <i class="fa-solid fa-arrow-down text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="articles" class="py-20 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mb-12">
+                    <span class="text-xs font-bold uppercase tracking-widest text-sky-600">Latest articles</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2">Digital ideas, made practical</h2>
+                    <p class="text-slate-600 mt-4">Straightforward guidance for choosing and getting more from digital tools.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <article class="bg-white border border-slate-200/80 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div class="w-12 h-12 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-semibold text-slate-500 mb-3">
+                            <span class="text-sky-700">Websites</span>
+                            <span aria-hidden="true">·</span>
+                            <span>5 min read</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 leading-snug">What makes a business website useful to customers?</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mt-3 flex-1">A useful website makes it easy to understand what you offer, trust your business, and take the next step—especially on a phone.</p>
+                        <a href="#article-business-website" class="inline-flex items-center gap-2 mt-6 text-sky-700 hover:text-sky-800 font-semibold text-sm">
+                            Read article <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </article>
+
+                    <article class="bg-white border border-slate-200/80 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-gears"></i>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-semibold text-slate-500 mb-3">
+                            <span class="text-indigo-700">Software</span>
+                            <span aria-hidden="true">·</span>
+                            <span>6 min read</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 leading-snug">When is it time to move a manual process into software?</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mt-3 flex-1">Repeated data entry, missed follow-ups, and hard-to-find records can signal that a workflow is ready for a better tool.</p>
+                        <a href="#article-business-software" class="inline-flex items-center gap-2 mt-6 text-sky-700 hover:text-sky-800 font-semibold text-sm">
+                            Read article <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </article>
+
+                    <article class="bg-white border border-slate-200/80 rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-semibold text-slate-500 mb-3">
+                            <span class="text-emerald-700">Security</span>
+                            <span aria-hidden="true">·</span>
+                            <span>4 min read</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 leading-snug">Simple steps to protect your business accounts online</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mt-3 flex-1">A few consistent habits—unique passwords, multi-factor authentication, and careful access sharing—can reduce common risks.</p>
+                        <a href="#article-online-security" class="inline-flex items-center gap-2 mt-6 text-sky-700 hover:text-sky-800 font-semibold text-sm">
+                            Read article <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white border-y border-slate-200/60 py-20">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                <article id="article-business-website" class="scroll-mt-28">
+                    <span class="text-xs font-bold uppercase tracking-widest text-sky-600">Websites · 5 min read</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">What makes a business website useful to customers?</h2>
+                    <p class="text-slate-500 text-sm mt-2">October 14, 2026</p>
+                    <div class="prose prose-slate max-w-none mt-6 space-y-4 text-slate-600 leading-relaxed">
+                        <p>A business website should answer a visitor's first questions quickly: what do you offer, who do you serve, and how can someone get in touch? Clear language and a visible contact option matter more than decorative effects.</p>
+                        <p>Make the experience work well on a phone. Use readable text, pages that load quickly, and buttons that are easy to tap. Keep important details—services, location or service area, opening hours, and contact information—current.</p>
+                        <p>Finally, give each page a clear purpose. A useful next step might be requesting a quote, booking a consultation, viewing a product, or calling your team. Make that action easy to find and test it regularly.</p>
+                    </div>
+                </article>
+
+                <article id="article-business-software" class="scroll-mt-28 border-t border-slate-200 pt-12">
+                    <span class="text-xs font-bold uppercase tracking-widest text-indigo-600">Software · 6 min read</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">When is it time to move a manual process into software?</h2>
+                    <p class="text-slate-500 text-sm mt-2">October 14, 2026</p>
+                    <div class="prose prose-slate max-w-none mt-6 space-y-4 text-slate-600 leading-relaxed">
+                        <p>Manual processes can work well while a team is small and the work is easy to track. As volume grows, repeated data entry, delayed approvals, missed follow-ups, and scattered records can consume time and make mistakes more likely.</p>
+                        <p>Before choosing software, write down the process as it works today: who does each step, what information they need, where delays happen, and what a successful outcome looks like. This helps distinguish a genuine process problem from a tool problem.</p>
+                        <p>Start with the highest-impact bottleneck. A focused solution that improves one workflow is often easier to adopt than a large system that tries to change everything at once. Include the people who will use it, and plan time for training and feedback.</p>
+                    </div>
+                </article>
+
+                <article id="article-online-security" class="scroll-mt-28 border-t border-slate-200 pt-12">
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Security · 4 min read</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">Simple steps to protect your business accounts online</h2>
+                    <p class="text-slate-500 text-sm mt-2">October 14, 2026</p>
+                    <div class="prose prose-slate max-w-none mt-6 space-y-4 text-slate-600 leading-relaxed">
+                        <p>Use a unique, hard-to-guess password for every important account. A password manager can help your team create and store them without reusing the same password across email, hosting, banking, and social media.</p>
+                        <p>Turn on multi-factor authentication wherever it is available, especially for email and administrator accounts. Review who has access to business tools, remove accounts that are no longer needed, and avoid sharing passwords in chats or documents.</p>
+                        <p>Be cautious with unexpected links and attachments, even when a message appears to come from someone you know. Keep devices and software updated, and make sure important business data is backed up in a place you can restore from.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="py-16 bg-sky-900 text-white">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-2xl sm:text-3xl font-extrabold">Have a digital project in mind?</h2>
+                <p class="text-sky-100 mt-3">Talk with our team about a practical solution for your business or organization.</p>
+                <a href="index.html#contact" class="inline-flex items-center gap-2 mt-6 bg-white hover:bg-sky-50 text-slate-900 px-6 py-3 rounded-xl font-semibold transition-colors">
+                    Contact Pefrika <i class="fa-solid fa-arrow-right text-sm"></i>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-950 text-slate-400 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+            <p>&copy; 2026 Pefrika Digital Solutions Limited. All rights reserved.</p>
+            <a href="index.html" class="hover:text-white transition-colors">Back to home</a>
+        </div>
+    </footer>
+
+    <script>
+        const menuButton = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuButton.addEventListener('click', () => {
+            const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+            menuButton.setAttribute('aria-expanded', String(!isExpanded));
+            mobileMenu.classList.toggle('hidden', isExpanded);
+        });
+
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuButton.setAttribute('aria-expanded', 'false');
+            });
+        });
+    </script>
+</body>
+</html>
