@@ -7,12 +7,14 @@ import { createApp } from '../server.js';
 
 const dataDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'pefrika-admin-test-'));
 const origin = 'http://localhost:3000';
+const publicOrigin = 'https://pefrika-website.vercel.app';
+const adminOrigin = 'https://pefrika-admin.onrender.com';
 const server = createApp({
     adminUsername: 'test-admin',
     adminPassword: 'test-password',
     sessionSecret: 'test-session-secret-that-is-long-enough-32',
     dataDirectory,
-    siteOrigins: [origin],
+    siteOrigins: [origin, publicOrigin, adminOrigin],
     production: false
 }).listen(0);
 
@@ -115,4 +117,40 @@ test('login rejects untrusted origins', async () => {
         body: JSON.stringify({ username: 'test-admin', password: 'test-password' })
     });
     assert.equal(response.status, 403);
+});
+
+test('only the dashboard and API routes are served by the backend', async () => {
+    for (const pathname of ['/', '/admin.html', '/admin.js', '/api-config.js']) {
+        const response = await fetch(`${baseUrl}${pathname}`);
+        assert.equal(response.status, 200, pathname);
+        if (pathname === '/') {
+            assert.match(await response.text(), /Sign in to your dashboard/);
+        }
+    }
+
+    for (const pathname of ['/index.html', '/blog.html', '/public-content.js']) {
+        const response = await fetch(`${baseUrl}${pathname}`);
+        assert.equal(response.status, 404, pathname);
+    }
+
+    const health = await fetch(`${baseUrl}/api/health`);
+    assert.equal(health.status, 200);
+    assert.deepEqual(await health.json(), { status: 'ok' });
+});
+
+test('public and admin deployment origins are explicitly allowed for API requests', async () => {
+    for (const allowedOrigin of [publicOrigin, adminOrigin]) {
+        const response = await fetch(`${baseUrl}/api/content`, {
+            headers: { Origin: allowedOrigin }
+        });
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get('access-control-allow-origin'), allowedOrigin);
+        assert.equal(response.headers.get('access-control-allow-credentials'), 'true');
+
+        const preflight = await fetch(`${baseUrl}/api/content`, {
+            method: 'OPTIONS',
+            headers: { Origin: allowedOrigin }
+        });
+        assert.equal(preflight.status, 204);
+    }
 });

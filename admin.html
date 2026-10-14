@@ -19,7 +19,7 @@
     <main class="min-h-screen">
         <section id="login-screen" class="min-h-screen flex items-center justify-center px-4 py-12">
             <div class="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl">
-                <a href="index.html" class="inline-flex items-center gap-3 mb-8">
+                <a href="/" data-public-site-link class="inline-flex items-center gap-3 mb-8">
                     <span class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xl font-bold">P</span>
                     <span>
                         <span class="block font-bold tracking-tight">PEFRIKA</span>
@@ -42,14 +42,14 @@
                         Sign in
                     </button>
                 </form>
-                <a href="index.html" class="inline-block mt-6 text-sm text-sky-700 hover:underline">Back to website</a>
+                <a href="/" data-public-site-link class="inline-block mt-6 text-sm text-sky-700 hover:underline">Back to website</a>
             </div>
         </section>
 
         <section id="dashboard-screen" class="hidden">
             <header class="bg-white border-b border-slate-200">
                 <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-                    <a href="index.html" class="flex items-center gap-3">
+                    <a href="/" data-public-site-link class="flex items-center gap-3">
                         <span class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-lg font-bold">P</span>
                         <span>
                             <span class="block font-bold tracking-tight">PEFRIKA</span>
@@ -57,7 +57,7 @@
                         </span>
                     </a>
                     <div class="flex items-center gap-3">
-                        <a href="index.html" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">
+                        <a href="/" data-public-site-link target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> View site
                         </a>
                         <button id="logout-button" type="button" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-700">Sign out</button>
@@ -121,7 +121,7 @@
                             </div>
                             <span class="text-xs text-slate-500"><i class="fa-solid fa-eye mr-1"></i>Unsaved edits appear here</span>
                         </div>
-                        <iframe id="preview-frame" title="Website live preview" class="preview-frame w-full border-0 bg-white" src="index.html?adminPreview=1"></iframe>
+                        <iframe id="preview-frame" title="Website live preview" class="preview-frame w-full border-0 bg-white" src="about:blank"></iframe>
                     </section>
                 </div>
                 <p class="text-xs text-slate-500 mt-5">Text changes are inserted as plain text. Link fields accept relative URLs, page anchors, web URLs, email addresses, and phone links.</p>

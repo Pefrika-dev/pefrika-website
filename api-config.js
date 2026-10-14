@@ -1,5 +1,6 @@
-// Set this to the deployed API origin when the website and API use different hosts.
-window.PEFRIKA_API_BASE_URL = '';
+window.PEFRIKA_API_BASE_URL = 'https://pefrika-admin.onrender.com';
+window.PEFRIKA_PUBLIC_SITE_URL = 'https://pefrika-website.vercel.app';
+window.PEFRIKA_ADMIN_ORIGIN = 'https://pefrika-admin.onrender.com';
 
 const adminApiBaseUrl = window.PEFRIKA_API_BASE_URL.replace(/\/+$/, '');
 if (adminApiBaseUrl) {

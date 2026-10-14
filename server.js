@@ -142,7 +142,7 @@ function createApp(config = {}) {
                 baseUri: ["'self'"],
                 objectSrc: ["'none'"],
                 frameAncestors: ["'self'"],
-                frameSrc: ["'self'"],
+                frameSrc: ["'self'", ...getAllowedOrigins(settings)],
                 scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.tailwindcss.com'],
                 styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
                 fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'data:'],
@@ -275,12 +275,18 @@ function createApp(config = {}) {
         }
     });
 
-    app.use(express.static(rootDirectory, {
-        dotfiles: 'deny',
-        index: 'index.html',
-        etag: true,
-        maxAge: settings.production ? '1h' : 0
-    }));
+    const adminAssetOptions = { etag: true, maxAge: settings.production ? '1h' : 0 };
+    const sendAdminAsset = filename => (req, res, next) => {
+        res.sendFile(path.join(rootDirectory, filename), adminAssetOptions, error => {
+            if (error) {
+                next(error);
+            }
+        });
+    };
+    app.get('/', sendAdminAsset('admin.html'));
+    app.get('/admin.html', sendAdminAsset('admin.html'));
+    app.get('/admin.js', sendAdminAsset('admin.js'));
+    app.get('/api-config.js', sendAdminAsset('api-config.js'));
 
     app.use((error, req, res, next) => {
         if (res.headersSent) {
@@ -300,7 +306,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const app = createApp();
     const port = Number(process.env.PORT ?? 3000);
     app.listen(port, '0.0.0.0', () => {
-        console.log(`Pefrika website and admin API listening on port ${port}.`);
+        console.log(`Pefrika admin API listening on port ${port}.`);
     });
 }
 

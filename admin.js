@@ -1,4 +1,9 @@
 const apiBaseUrl = (window.PEFRIKA_API_BASE_URL || '').replace(/\/+$/, '');
+const publicSiteUrl = new URL(window.PEFRIKA_PUBLIC_SITE_URL || window.location.origin).origin;
+const previewOrigin = new URL(publicSiteUrl).origin;
+document.querySelectorAll('[data-public-site-link]').forEach(link => {
+    link.href = `${publicSiteUrl}/`;
+});
 const loginScreen = document.getElementById('login-screen');
 const dashboardScreen = document.getElementById('dashboard-screen');
 const loginForm = document.getElementById('login-form');
@@ -11,16 +16,34 @@ const previewFrame = document.getElementById('preview-frame');
 const dashboardStatus = document.getElementById('dashboard-status');
 const saveButton = document.getElementById('save-button');
 const previewPages = {
-    index: { url: 'index.html?adminPreview=1', label: 'Home page' },
-    blog: { url: 'blog.html?adminPreview=1', label: 'Blog page' }
+    index: { url: `${publicSiteUrl}/index.html?adminPreview=1`, label: 'Home page' },
+    blog: { url: `${publicSiteUrl}/blog.html?adminPreview=1`, label: 'Blog page' }
 };
 const dashboardApiIsCrossOrigin = Boolean(apiBaseUrl) && new URL(apiBaseUrl, window.location.href).origin !== window.location.origin;
 
 let savedContent = {};
 let pageFields = [];
-const pageBaselines = {};
 let activePage = 'index';
 let renderGeneration = 0;
+let previewRequestId = 0;
+const previewRequests = new Map();
+
+window.addEventListener('message', event => {
+    if (event.origin !== previewOrigin || event.source !== previewFrame.contentWindow) {
+        return;
+    }
+    const message = event.data;
+    if (!message || message.channel !== 'pefrika-admin-preview' || typeof message.requestId !== 'string') {
+        return;
+    }
+    const pending = previewRequests.get(message.requestId);
+    if (!pending) {
+        return;
+    }
+    clearTimeout(pending.timeout);
+    previewRequests.delete(message.requestId);
+    pending.resolve(message.result);
+});
 
 function apiUrl(path) {
     return `${apiBaseUrl}${path}`;
@@ -54,113 +77,24 @@ function showStatus(message, isError = false) {
         : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`;
 }
 
-function getNodePath(root, node) {
-    const path = [];
-    let current = node;
-    while (current && current !== root) {
-        const parent = current.parentNode;
-        if (!parent) {
-            return null;
-        }
-        path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
-        current = parent;
+function requestPreview(action, data = {}) {
+    if (!previewFrame.contentWindow || previewFrame.dataset.loadedUrl !== previewFrame.src) {
+        return Promise.reject(new Error('The preview is not ready yet.'));
     }
-    return current === root ? path.join('.') : null;
-}
-
-function getNodeAtPath(root, key) {
-    let current = root;
-    for (const index of key.split('.').map(Number)) {
-        current = current?.childNodes[index];
-        if (!current) {
-            return null;
-        }
-    }
-    return current;
-}
-
-function getTextNodes(doc) {
-    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
-        acceptNode(node) {
-            if (!node.nodeValue.trim()) {
-                return NodeFilter.FILTER_REJECT;
-            }
-            const parent = node.parentElement;
-            if (!parent || parent.closest('script, style, noscript, title, textarea, input, select, option, svg')) {
-                return NodeFilter.FILTER_REJECT;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-        }
+    const requestId = String(++previewRequestId);
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            previewRequests.delete(requestId);
+            reject(new Error('The website preview did not respond. Check the public site and admin-origin configuration.'));
+        }, 10000);
+        previewRequests.set(requestId, { resolve, timeout });
+        previewFrame.contentWindow.postMessage({
+            channel: 'pefrika-admin-preview',
+            requestId,
+            action,
+            ...data
+        }, previewOrigin);
     });
-
-    const nodes = [];
-    while (walker.nextNode()) {
-        nodes.push(walker.currentNode);
-    }
-    return nodes;
-}
-
-function getGroup(node, doc) {
-    let current = node.parentElement;
-    while (current && current !== doc.body) {
-        if (['SECTION', 'ARTICLE', 'HEADER', 'FOOTER'].includes(current.tagName)) {
-            const heading = current.querySelector('h1, h2, h3, h4');
-            if (heading) {
-                return heading.textContent.trim().replace(/\s+/g, ' ').slice(0, 80);
-            }
-            if (current.id) {
-                return current.id.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
-            }
-            return current.tagName === 'FOOTER' ? 'Footer' : 'Header';
-        }
-        current = current.parentElement;
-    }
-    return 'Page content';
-}
-
-function findLink(node) {
-    return node.parentElement?.closest('a[href]') ?? null;
-}
-
-function loadContentIntoPreview() {
-    const doc = previewFrame.contentDocument;
-    if (!doc?.body) {
-        throw new Error('The preview could not be loaded. Check that the website and admin dashboard share the same origin.');
-    }
-
-    if (!pageBaselines[activePage]) {
-        const texts = {};
-        for (const node of getTextNodes(doc)) {
-            const key = getNodePath(doc.body, node);
-            if (key !== null) {
-                texts[key] = node.nodeValue;
-            }
-        }
-        const hrefs = {};
-        for (const link of doc.querySelectorAll('a[href]')) {
-            const key = getNodePath(doc.body, link);
-            if (key !== null) {
-                hrefs[key] = link.getAttribute('href');
-            }
-        }
-        pageBaselines[activePage] = { texts, hrefs };
-    }
-
-    const overrides = savedContent[activePage] || { texts: {}, hrefs: {} };
-    const nodes = getTextNodes(doc);
-    for (const node of nodes) {
-        const key = getNodePath(doc.body, node);
-        if (key !== null && Object.hasOwn(overrides.texts || {}, key)) {
-            node.nodeValue = overrides.texts[key];
-        }
-    }
-    for (const [key, href] of Object.entries(overrides.hrefs || {})) {
-        const link = getNodeAtPath(doc.body, key);
-        if (link?.nodeType === Node.ELEMENT_NODE && link.tagName === 'A') {
-            link.setAttribute('href', href);
-        }
-    }
-    return doc;
 }
 
 function makeEditorField(field) {
@@ -188,10 +122,8 @@ function makeEditorField(field) {
         field.value = input.value;
         const prefix = field.original.match(/^\s*/)?.[0] || '';
         const suffix = field.original.match(/\s*$/)?.[0] || '';
-        const currentNode = getNodeAtPath(previewFrame.contentDocument.body, field.path);
-        if (currentNode?.nodeType === Node.TEXT_NODE) {
-            currentNode.nodeValue = `${prefix}${input.value}${suffix}`;
-        }
+        const value = `${prefix}${input.value}${suffix}`;
+        requestPreview('setText', { path: field.path, value }).catch(error => showStatus(error.message, true));
 
         const pageData = savedContent[activePage] || { texts: {}, hrefs: {} };
         pageData.texts ||= {};
@@ -229,9 +161,9 @@ function makeEditorField(field) {
             }
             savedContent[activePage] = pageData;
 
-            const previewLink = getNodeAtPath(previewFrame.contentDocument.body, field.linkPath);
-            if (previewLink?.tagName === 'A' && isSafeLink(field.href)) {
-                previewLink.setAttribute('href', field.href);
+            if (isSafeLink(field.href)) {
+                requestPreview('setHref', { path: field.linkPath, value: field.href })
+                    .catch(error => showStatus(error.message, true));
             }
         });
         container.appendChild(linkInput);
@@ -255,26 +187,9 @@ function isSafeLink(value) {
     }
 }
 
-function renderEditor() {
+async function renderEditor() {
     const generation = ++renderGeneration;
-    const doc = loadContentIntoPreview();
-    pageFields = getTextNodes(doc).map(node => {
-        const path = getNodePath(doc.body, node);
-        const link = findLink(node);
-        const linkPath = link ? getNodePath(doc.body, link) : null;
-        const override = savedContent[activePage] || {};
-        return {
-            path,
-            node,
-            value: node.nodeValue.replace(/^\s+|\s+$/g, ''),
-            original: pageBaselines[activePage].texts[path] ?? node.nodeValue,
-            group: getGroup(node, doc),
-            element: node.parentElement.tagName.toLowerCase(),
-            linkPath,
-            href: link && Object.hasOwn(override.hrefs || {}, linkPath) ? override.hrefs[linkPath] : link?.getAttribute('href') || '',
-            originalHref: link ? pageBaselines[activePage].hrefs[linkPath] || '' : ''
-        };
-    }).filter(field => field.path !== null);
+    pageFields = await requestPreview('inspect', { content: savedContent });
 
     const groups = [...new Set(pageFields.map(field => field.group))];
     sectionSelect.replaceChildren(new Option('All sections', ''));
@@ -316,7 +231,11 @@ async function loadDashboard() {
     savedContent = await request('/api/content');
     loginScreen.classList.add('hidden');
     dashboardScreen.classList.remove('hidden');
-    renderEditor();
+    try {
+        await changePage(activePage);
+    } catch (error) {
+        showStatus(error.message, true);
+    }
 }
 
 async function changePage(page) {
@@ -324,14 +243,17 @@ async function changePage(page) {
     const details = previewPages[page];
     document.getElementById('preview-label').textContent = details.label;
     editorList.textContent = 'Loading page content…';
-    if (!previewFrame.src.endsWith(details.url)) {
+    if (previewFrame.dataset.loadedUrl !== details.url) {
         await new Promise((resolve, reject) => {
-            previewFrame.onload = resolve;
+            previewFrame.onload = () => {
+                previewFrame.dataset.loadedUrl = details.url;
+                resolve();
+            };
             previewFrame.onerror = () => reject(new Error('The selected page preview could not be loaded.'));
             previewFrame.src = details.url;
         });
     }
-    renderEditor();
+    await renderEditor();
 }
 
 loginForm.addEventListener('submit', async event => {
@@ -389,9 +311,7 @@ saveButton.addEventListener('click', async () => {
 document.getElementById('reload-button').addEventListener('click', async () => {
     try {
         savedContent = await request('/api/content');
-        previewFrame.src = previewPages[activePage].url;
-        await new Promise(resolve => { previewFrame.onload = resolve; });
-        renderEditor();
+        await renderEditor();
         showStatus('Saved website content reloaded.');
     } catch (error) {
         showStatus(error.message, true);
@@ -405,8 +325,8 @@ pageSelect.addEventListener('change', async () => {
         showStatus(error.message, true);
     }
 });
-sectionSelect.addEventListener('change', renderEditor);
-searchInput.addEventListener('input', renderEditor);
+sectionSelect.addEventListener('change', () => renderEditor().catch(error => showStatus(error.message, true)));
+searchInput.addEventListener('input', () => renderEditor().catch(error => showStatus(error.message, true)));
 
 if (dashboardApiIsCrossOrigin) {
     window.location.replace(`${apiBaseUrl}/admin.html`);
