@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Dashboard | Pefrika Digital Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .preview-frame { min-height: 620px; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+    <main class="min-h-screen">
+        <section id="login-screen" class="min-h-screen flex items-center justify-center px-4 py-12">
+            <div class="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-xl">
+                <a href="index.html" class="inline-flex items-center gap-3 mb-8">
+                    <span class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xl font-bold">P</span>
+                    <span>
+                        <span class="block font-bold tracking-tight">PEFRIKA</span>
+                        <span class="block text-xs text-slate-500">Website administration</span>
+                    </span>
+                </a>
+                <h1 class="text-2xl font-extrabold">Sign in to your dashboard</h1>
+                <p class="text-sm text-slate-600 mt-2 mb-6">Use the admin username and password configured on your server.</p>
+                <form id="login-form" class="space-y-4">
+                    <label class="block">
+                        <span class="block text-sm font-semibold text-slate-700 mb-1">Username</span>
+                        <input id="username" name="username" autocomplete="username" required class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </label>
+                    <label class="block">
+                        <span class="block text-sm font-semibold text-slate-700 mb-1">Password</span>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </label>
+                    <p id="login-error" role="alert" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3"></p>
+                    <button id="login-button" type="submit" class="w-full bg-slate-900 hover:bg-sky-700 text-white font-semibold rounded-xl py-3 transition-colors">
+                        Sign in
+                    </button>
+                </form>
+                <a href="index.html" class="inline-block mt-6 text-sm text-sky-700 hover:underline">Back to website</a>
+            </div>
+        </section>
+
+        <section id="dashboard-screen" class="hidden">
+            <header class="bg-white border-b border-slate-200">
+                <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+                    <a href="index.html" class="flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-lg font-bold">P</span>
+                        <span>
+                            <span class="block font-bold tracking-tight">PEFRIKA</span>
+                            <span class="block text-xs text-slate-500">Content dashboard</span>
+                        </span>
+                    </a>
+                    <div class="flex items-center gap-3">
+                        <a href="index.html" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> View site
+                        </a>
+                        <button id="logout-button" type="button" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-700">Sign out</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="max-w-screen-2xl mx-auto p-4 sm:p-6">
+                <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-6">
+                    <div>
+                        <p class="text-xs font-bold tracking-widest uppercase text-sky-700">Website content</p>
+                        <h1 class="text-3xl font-extrabold mt-1">Manage your website</h1>
+                        <p class="text-slate-600 mt-2 max-w-2xl">Edit the text and links shown on your home and blog pages. Changes are saved on the server and displayed to every visitor.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="reload-button" type="button" class="px-4 py-3 rounded-xl border border-slate-300 bg-white text-sm font-semibold hover:bg-slate-50">
+                            <i class="fa-solid fa-rotate-right mr-2"></i>Reload page
+                        </button>
+                        <button id="save-button" type="button" class="px-5 py-3 rounded-xl bg-sky-700 hover:bg-sky-600 text-white text-sm font-semibold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk mr-2"></i>Save changes
+                        </button>
+                    </div>
+                </div>
+
+                <p id="dashboard-status" role="status" class="hidden mb-5 rounded-xl border p-3 text-sm"></p>
+
+                <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(380px,0.75fr)] gap-6 items-start">
+                    <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row gap-3">
+                            <label class="flex-1">
+                                <span class="sr-only">Select page</span>
+                                <select id="page-select" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <option value="index">Home page</option>
+                                    <option value="blog">Blog page</option>
+                                </select>
+                            </label>
+                            <label class="flex-1">
+                                <span class="sr-only">Filter section</span>
+                                <select id="section-select" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <option value="">All sections</option>
+                                </select>
+                            </label>
+                            <label class="flex-1">
+                                <span class="sr-only">Search page content</span>
+                                <input id="search-input" type="search" placeholder="Find content..." class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            </label>
+                        </div>
+                        <div id="editor-list" class="p-4 sm:p-5 space-y-4 max-h-[72vh] overflow-y-auto">
+                            <div class="text-center text-slate-500 py-10">
+                                <i class="fa-solid fa-spinner fa-spin text-xl"></i>
+                                <p class="mt-3 text-sm">Loading website content…</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden xl:sticky xl:top-5">
+                        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between gap-3">
+                            <div>
+                                <h2 class="font-bold">Live preview</h2>
+                                <p id="preview-label" class="text-xs text-slate-500 mt-0.5">Home page</p>
+                            </div>
+                            <span class="text-xs text-slate-500"><i class="fa-solid fa-eye mr-1"></i>Unsaved edits appear here</span>
+                        </div>
+                        <iframe id="preview-frame" title="Website live preview" class="preview-frame w-full border-0 bg-white" src="index.html?adminPreview=1"></iframe>
+                    </section>
+                </div>
+                <p class="text-xs text-slate-500 mt-5">Text changes are inserted as plain text. Link fields accept relative URLs, page anchors, web URLs, email addresses, and phone links.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="api-config.js"></script>
+    <script src="admin.js" defer></script>
+</body>
+</html>
