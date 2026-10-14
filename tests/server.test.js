@@ -53,6 +53,7 @@ test('content can be read publicly and editing requires authentication', async (
         body: JSON.stringify({})
     });
     assert.equal(deniedResponse.status, 401);
+    assert.equal((await api('/api/appointments')).status, 401);
 });
 
 test('admin login sets a valid session cookie', async () => {
@@ -71,6 +72,41 @@ test('admin login sets a valid session cookie', async () => {
 
     const sessionResponse = await api('/api/session');
     assert.deepEqual(await sessionResponse.json(), { authenticated: true });
+});
+
+test('clients can submit appointments and only authenticated admins can read them', async () => {
+    const invalidResponse = await api('/api/appointments', {
+        method: 'POST',
+        body: JSON.stringify({
+            name: 'Client Name',
+            phone: '0712345678',
+            service: 'Website Design & Development',
+            preferredDateTime: '2026-02-31T10:00'
+        })
+    });
+    assert.equal(invalidResponse.status, 400);
+
+    const response = await api('/api/appointments', {
+        method: 'POST',
+        body: JSON.stringify({
+            name: '  Client Name  ',
+            phone: '0712345678',
+            service: 'Website Design & Development',
+            preferredDateTime: '2026-12-31T10:00'
+        })
+    });
+    assert.equal(response.status, 201);
+    const { appointment } = await response.json();
+    assert.equal(appointment.name, 'Client Name');
+    assert.equal(appointment.phone, '0712345678');
+    assert.ok(appointment.id);
+    assert.ok(appointment.createdAt);
+
+    const inboxResponse = await api('/api/appointments');
+    assert.equal(inboxResponse.status, 200);
+    assert.deepEqual(await inboxResponse.json(), [appointment]);
+    const stored = JSON.parse(await fs.readFile(path.join(dataDirectory, 'appointments.json'), 'utf8'));
+    assert.deepEqual(stored, [appointment]);
 });
 
 test('authenticated content edits persist and unsafe links are rejected', async () => {
@@ -117,6 +153,18 @@ test('login rejects untrusted origins', async () => {
         body: JSON.stringify({ username: 'test-admin', password: 'test-password' })
     });
     assert.equal(response.status, 403);
+
+    const appointmentResponse = await fetch(`${baseUrl}/api/appointments`, {
+        method: 'POST',
+        headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: 'Client Name',
+            phone: '0712345678',
+            service: 'Website Design & Development',
+            preferredDateTime: '2026-12-31T10:00'
+        })
+    });
+    assert.equal(appointmentResponse.status, 403);
 });
 
 test('only the dashboard and API routes are served by the backend', async () => {

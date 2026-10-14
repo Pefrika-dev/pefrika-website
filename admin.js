@@ -15,6 +15,8 @@ const searchInput = document.getElementById('search-input');
 const previewFrame = document.getElementById('preview-frame');
 const dashboardStatus = document.getElementById('dashboard-status');
 const saveButton = document.getElementById('save-button');
+const appointmentList = document.getElementById('appointment-list');
+const appointmentCount = document.getElementById('appointment-count');
 const previewPages = {
     index: { url: `${publicSiteUrl}/index.html?adminPreview=1`, label: 'Home page' },
     blog: { url: `${publicSiteUrl}/blog.html?adminPreview=1`, label: 'Blog page' }
@@ -75,6 +77,62 @@ function showStatus(message, isError = false) {
     dashboardStatus.className = `mb-5 rounded-xl border p-3 text-sm ${isError
         ? 'border-red-200 bg-red-50 text-red-800'
         : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`;
+}
+
+function renderAppointments(appointments) {
+    appointmentCount.textContent = `(${appointments.length})`;
+    appointmentList.replaceChildren();
+
+    if (!appointments.length) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'text-sm text-slate-500';
+        emptyMessage.textContent = 'No appointment requests yet.';
+        appointmentList.appendChild(emptyMessage);
+        return;
+    }
+
+    for (const appointment of appointments) {
+        const card = document.createElement('article');
+        card.className = 'rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4';
+
+        const details = document.createElement('div');
+        details.className = 'space-y-1';
+        const name = document.createElement('h3');
+        name.className = 'font-semibold text-slate-900';
+        name.textContent = appointment.name;
+        const contact = document.createElement('a');
+        contact.className = 'block text-sm text-sky-700 hover:underline';
+        contact.href = `tel:${appointment.phone}`;
+        contact.textContent = appointment.phone;
+        const service = document.createElement('p');
+        service.className = 'text-sm text-slate-700';
+        service.textContent = appointment.service;
+        const preferredTime = document.createElement('p');
+        preferredTime.className = 'text-sm text-slate-600';
+        preferredTime.textContent = `Preferred: ${new Date(appointment.preferredDateTime).toLocaleString()}`;
+        const submitted = document.createElement('p');
+        submitted.className = 'text-xs text-slate-500';
+        submitted.textContent = `Received: ${new Date(appointment.createdAt).toLocaleString()}`;
+        details.append(name, contact, service, preferredTime, submitted);
+
+        const whatsapp = document.createElement('a');
+        whatsapp.className = 'shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700';
+        const digits = appointment.phone.replace(/\D/g, '');
+        whatsapp.href = `https://wa.me/${digits}?text=${encodeURIComponent('Hello ' + appointment.name + ', we received your appointment request and will be in touch to confirm.')}`;
+        whatsapp.target = '_blank';
+        whatsapp.rel = 'noopener noreferrer';
+        whatsapp.textContent = 'Contact client';
+        card.append(details, whatsapp);
+        appointmentList.appendChild(card);
+    }
+}
+
+async function loadAppointments() {
+    const appointments = await request('/api/appointments');
+    if (!Array.isArray(appointments)) {
+        throw new Error('The appointment service returned invalid data.');
+    }
+    renderAppointments(appointments);
 }
 
 function requestPreview(action, data = {}) {
@@ -232,6 +290,11 @@ async function loadDashboard() {
     loginScreen.classList.add('hidden');
     dashboardScreen.classList.remove('hidden');
     try {
+        await loadAppointments();
+    } catch (error) {
+        appointmentList.textContent = error.message;
+    }
+    try {
         await changePage(activePage);
     } catch (error) {
         showStatus(error.message, true);
@@ -317,6 +380,20 @@ document.getElementById('reload-button').addEventListener('click', async () => {
         showStatus(error.message, true);
     }
 });
+
+document.getElementById('refresh-appointments').addEventListener('click', async () => {
+    try {
+        await loadAppointments();
+    } catch (error) {
+        showStatus(error.message, true);
+    }
+});
+
+window.setInterval(() => {
+    if (!dashboardScreen.classList.contains('hidden')) {
+        loadAppointments().catch(error => showStatus(error.message, true));
+    }
+}, 60000);
 
 pageSelect.addEventListener('change', async () => {
     try {

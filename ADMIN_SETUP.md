@@ -1,6 +1,6 @@
 # Admin dashboard setup
 
-The dashboard at `/admin.html` can edit visible text and link destinations on the home and blog pages. Edits are stored as plain text in a JSON file on the server; they do not replace HTML or execute saved content.
+The dashboard at `/admin.html` can edit visible text and link destinations on the home and blog pages, and shows client appointment requests submitted from the public website. Content and appointment requests are stored in JSON files on the server; they do not replace HTML or execute saved content.
 
 ## Run locally
 
@@ -19,7 +19,7 @@ Set `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SESSION_SECRET`, and `DATA_DIR` as priv
 
 `api-config.js` sets the API origin, public preview origin, and the only admin origin allowed to control the cross-origin preview. These must match the actual deployment URLs. The dashboard and public preview exchange only inspected text/link data and edit commands through `postMessage`; both sides validate the exact peer origin and iframe window.
 
-The content file must live on persistent storage. **Render's free plan does not provide a persistent disk**, so saved edits can be lost when its instance restarts, sleeps, or redeploys. Use a paid Render plan with a persistent disk and set `DATA_DIR` to its mount path (for example `/var/data`) to retain changes. The server also uses HTTP-only signed cookies, origin checks on writes, login throttling, restrictive link validation, and atomic content-file updates.
+The content and appointment files must live on persistent storage. **Render's free plan does not provide a persistent disk**, so saved edits and appointment requests can be lost when its instance restarts, sleeps, or redeploys. Use a paid Render plan with a persistent disk and set `DATA_DIR` to its mount path (for example `/var/data`) to retain changes. The server also uses HTTP-only signed cookies, origin checks on writes, login and appointment throttling, restrictive link validation, and atomic file updates.
 
 ## Verify
 

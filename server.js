@@ -13,6 +13,15 @@ const maximumRequestBytes = '1mb';
 const maximumEntriesPerPage = 5000;
 const maximumTextLength = 5000;
 const allowedPages = new Set(['index', 'blog']);
+const allowedAppointmentServices = new Set([
+    'Website Design & Development',
+    'Business Web Application / SaaS',
+    'School Management System',
+    'Hospital & Clinic System',
+    'Business Management System / CRM',
+    'E-Commerce / API Integration',
+    'General Digital Transformation'
+]);
 
 function secureEqual(first, second) {
     const firstHash = crypto.createHash('sha256').update(String(first)).digest();
@@ -95,6 +104,52 @@ function normalizeContent(input) {
     return normalized;
 }
 
+function normalizeAppointment(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input) ||
+        Object.keys(input).some(key => !['name', 'phone', 'service', 'preferredDateTime'].includes(key))) {
+        throw new Error('Appointment details are required.');
+    }
+    const { name, phone, service, preferredDateTime } = input;
+    if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100 ||
+        /[\u0000-\u001f\u007f]/.test(name)) {
+        throw new Error('Enter a valid name (2–100 characters).');
+    }
+    if (typeof phone !== 'string' || phone.trim().length > 30 ||
+        !/^[+0-9().\s-]{7,30}$/.test(phone.trim()) ||
+        phone.replace(/\D/g, '').length < 7) {
+        throw new Error('Enter a valid phone number.');
+    }
+    if (typeof service !== 'string' || !allowedAppointmentServices.has(service)) {
+        throw new Error('Select a valid service.');
+    }
+    const dateParts = typeof preferredDateTime === 'string'
+        ? preferredDateTime.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/)
+        : null;
+    const date = dateParts && new Date(Date.UTC(
+        Number(dateParts[1]),
+        Number(dateParts[2]) - 1,
+        Number(dateParts[3]),
+        Number(dateParts[4]),
+        Number(dateParts[5])
+    ));
+    if (!date || Number.isNaN(date.getTime()) ||
+        date.getUTCFullYear() !== Number(dateParts[1]) ||
+        date.getUTCMonth() + 1 !== Number(dateParts[2]) ||
+        date.getUTCDate() !== Number(dateParts[3]) ||
+        Number(dateParts[4]) > 23 || Number(dateParts[5]) > 59) {
+        throw new Error('Select a valid preferred date and time.');
+    }
+
+    return {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        phone: phone.trim(),
+        service,
+        preferredDateTime,
+        createdAt: new Date().toISOString()
+    };
+}
+
 function getAllowedOrigins(config) {
     return new Set(config.siteOrigins.map(origin => new URL(origin).origin));
 }
@@ -129,9 +184,29 @@ function createApp(config = {}) {
     getAllowedOrigins(settings);
 
     const contentFile = path.join(settings.dataDirectory, 'content.json');
+    const appointmentsFile = path.join(settings.dataDirectory, 'appointments.json');
     const app = express();
     const loginAttempts = new Map();
+    const appointmentAttempts = new Map();
     let writeQueue = Promise.resolve();
+
+    function enqueueWrite(task) {
+        const result = writeQueue.then(task);
+        writeQueue = result.catch(() => {});
+        return result;
+    }
+
+    async function writeJsonFile(filename, data) {
+        await fs.mkdir(settings.dataDirectory, { recursive: true });
+        const temporaryFile = `${filename}.${crypto.randomUUID()}.tmp`;
+        try {
+            await fs.writeFile(temporaryFile, `${JSON.stringify(data, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+            await fs.rename(temporaryFile, filename);
+        } catch (error) {
+            await fs.rm(temporaryFile, { force: true }).catch(() => {});
+            throw error;
+        }
+    }
 
     app.disable('x-powered-by');
     app.set('trust proxy', 1);
@@ -189,6 +264,68 @@ function createApp(config = {}) {
         } catch (error) {
             console.error('Unable to read website content:', error);
             res.status(500).json({ error: 'Website content could not be loaded.' });
+        }
+    });
+
+    app.post('/api/appointments', async (req, res) => {
+        if (!originIsAllowed(req, settings)) {
+            return res.status(403).json({ error: 'Origin is not allowed.' });
+        }
+
+        const now = Date.now();
+        const attempts = (appointmentAttempts.get(req.ip) ?? []).filter(time => now - time < 15 * 60 * 1000);
+        if (attempts.length >= 10) {
+            appointmentAttempts.set(req.ip, attempts);
+            return res.status(429).json({ error: 'Too many appointment requests. Please try again later.' });
+        }
+
+        let appointment;
+        try {
+            appointment = normalizeAppointment(req.body);
+        } catch (error) {
+            return res.status(400).json({ error: error.message });
+        }
+        attempts.push(now);
+        appointmentAttempts.set(req.ip, attempts);
+
+        try {
+            let appointments;
+            await enqueueWrite(async () => {
+                appointments = await fs.readFile(appointmentsFile, 'utf8').then(JSON.parse).catch(error => {
+                    if (error.code === 'ENOENT') {
+                        return [];
+                    }
+                    throw error;
+                });
+                if (!Array.isArray(appointments)) {
+                    throw new Error('Stored appointment data is invalid.');
+                }
+                appointments.unshift(appointment);
+                await writeJsonFile(appointmentsFile, appointments.slice(0, 1000));
+            });
+            res.status(201).set('Cache-Control', 'no-store').json({ appointment });
+        } catch (error) {
+            console.error('Unable to save appointment request:', error);
+            res.status(500).json({ error: 'Appointment request could not be saved.' });
+        }
+    });
+
+    app.get('/api/appointments', async (req, res) => {
+        if (!isAuthenticated(req, settings)) {
+            return res.status(401).json({ error: 'Sign in to view appointment requests.' });
+        }
+
+        try {
+            const stored = await fs.readFile(appointmentsFile, 'utf8').catch(error => {
+                if (error.code === 'ENOENT') {
+                    return '[]';
+                }
+                throw error;
+            });
+            res.set('Cache-Control', 'no-store').json(JSON.parse(stored));
+        } catch (error) {
+            console.error('Unable to read appointment requests:', error);
+            res.status(500).json({ error: 'Appointment requests could not be loaded.' });
         }
     });
 
@@ -254,20 +391,8 @@ function createApp(config = {}) {
             return res.status(400).json({ error: error.message });
         }
 
-        writeQueue = writeQueue.then(async () => {
-            await fs.mkdir(settings.dataDirectory, { recursive: true });
-            const temporaryFile = `${contentFile}.${crypto.randomUUID()}.tmp`;
-            try {
-                await fs.writeFile(temporaryFile, `${JSON.stringify(normalized, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
-                await fs.rename(temporaryFile, contentFile);
-            } catch (error) {
-                await fs.rm(temporaryFile, { force: true }).catch(() => {});
-                throw error;
-            }
-        });
-
         try {
-            await writeQueue;
+            await enqueueWrite(() => writeJsonFile(contentFile, normalized));
             res.set('Cache-Control', 'no-store').json({ saved: true });
         } catch (error) {
             console.error('Unable to save website content:', error);

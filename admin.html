@@ -84,6 +84,21 @@
 
                 <p id="dashboard-status" role="status" class="hidden mb-5 rounded-xl border p-3 text-sm"></p>
 
+                <section class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-6">
+                    <div class="px-4 sm:px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
+                        <div>
+                            <h2 class="font-bold text-lg">Appointment requests <span id="appointment-count" class="text-sm font-normal text-slate-500">(0)</span></h2>
+                            <p class="text-sm text-slate-500 mt-1">Requests submitted by clients from the public website.</p>
+                        </div>
+                        <button id="refresh-appointments" type="button" class="shrink-0 px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">
+                            <i class="fa-solid fa-rotate-right mr-2"></i>Refresh
+                        </button>
+                    </div>
+                    <div id="appointment-list" aria-live="polite" class="p-4 sm:p-5 space-y-3">
+                        <p class="text-sm text-slate-500">Loading appointment requests…</p>
+                    </div>
+                </section>
+
                 <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(380px,0.75fr)] gap-6 items-start">
                     <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row gap-3">
