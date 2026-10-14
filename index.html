@@ -1006,6 +1006,7 @@
                         <li><a href="#solutions" class="hover:text-white transition-colors">Solutions</a></li>
                         <li><a href="#portfolio" class="hover:text-white transition-colors">Portfolio</a></li>
                         <li><a href="#contact" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="admin.html" data-admin-link class="hover:text-white transition-colors">Admin</a></li>
                     </ul>
                 </div>
 
@@ -1129,15 +1130,15 @@
             <form id="appointment-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Your Full Name</label>
-                    <input type="text" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. John Ochieng">
+                    <input name="name" type="text" autocomplete="name" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. John Ochieng">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Phone Number</label>
-                    <input type="tel" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. 0712345678">
+                    <input name="phone" type="tel" autocomplete="tel" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900" placeholder="e.g. 0712345678">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Project or Service of Interest</label>
-                    <select class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900">
+                    <select name="service" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900">
                         <option>Website Design & Development</option>
                         <option>Business Web Application / SaaS</option>
                         <option>School Management System</option>
@@ -1149,11 +1150,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Preferred Date & Time</label>
-                    <input type="datetime-local" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900">
+                    <input name="preferredDateTime" type="datetime-local" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-600 text-slate-900">
                 </div>
                 <button type="submit" class="w-full bg-slate-900 hover:bg-sky-600 text-white py-3.5 rounded-xl font-semibold text-sm shadow transition-colors mt-2">
                     Submit Appointment Request
                 </button>
+                <p id="appointment-error" role="alert" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3"></p>
             </form>
 
             <div id="form-success" class="hidden text-center py-8 space-y-3">
@@ -1162,8 +1164,12 @@
                 </div>
                 <h4 class="text-xl font-bold text-slate-900">Request Received!</h4>
                 <p class="text-slate-600 text-sm">
-                    Thank you for reaching out to Pefrika Digital Solutions Limited. Thomas Hondo Chacha will review your request and contact you via phone or email to confirm the appointment.
+                    Your appointment request was submitted. It is now available to our team in the admin dashboard.
                 </p>
+                <p class="text-slate-600 text-sm">You can also send us the details in WhatsApp to follow up.</p>
+                <a id="appointment-whatsapp-link" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold mt-2">
+                    <i class="fa-brands fa-whatsapp"></i> Open WhatsApp request
+                </a>
                 <button onclick="closeModal()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold mt-4">
                     Close Window
                 </button>
@@ -1235,11 +1241,54 @@
             }
         });
 
-        // Handle Form Submission (Frontend interaction without backend)
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
-            appointmentForm.classList.add('hidden');
-            formSuccess.classList.remove('hidden');
+            const formData = new FormData(appointmentForm);
+            const name = formData.get('name').trim();
+            const phone = formData.get('phone').trim();
+            const service = formData.get('service');
+            const preferredDateTime = formData.get('preferredDateTime');
+            const submitButton = appointmentForm.querySelector('button[type="submit"]');
+            const errorMessage = document.getElementById('appointment-error');
+            errorMessage.classList.add('hidden');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting…';
+
+            const message = [
+                'Hello Pefrika Digital Solutions Limited,',
+                '',
+                'I would like to request an appointment.',
+                `Name: ${name}`,
+                `Phone: ${phone}`,
+                `Project or service: ${service}`,
+                `Preferred date and time: ${preferredDateTime}`,
+                '',
+                'Please confirm whether this appointment time is available.'
+            ].join('\n');
+            const whatsappUrl = `https://wa.me/254705023432?text=${encodeURIComponent(message)}`;
+            const whatsappLink = document.getElementById('appointment-whatsapp-link');
+            whatsappLink.href = whatsappUrl;
+
+            try {
+                const apiBaseUrl = (window.PEFRIKA_API_BASE_URL || '').replace(/\/+$/, '');
+                const response = await fetch(`${apiBaseUrl}/api/appointments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, service, preferredDateTime })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(result.error || `Request failed (${response.status}).`);
+                }
+                appointmentForm.classList.add('hidden');
+                formSuccess.classList.remove('hidden');
+            } catch (error) {
+                errorMessage.textContent = `Your request could not be submitted: ${error.message}. Please try again or contact us directly.`;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Appointment Request';
+            }
         }
 
         document.querySelectorAll('.pay-now-btn').forEach(button => {
@@ -1283,5 +1332,7 @@
             window.open(whatsappUrl, '_blank');
         }
     </script>
+    <script src="api-config.js"></script>
+    <script src="public-content.js" defer></script>
 </body>
 </html>
